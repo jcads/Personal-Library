@@ -27,9 +27,11 @@ Book.prototype.setRead = function(val) {
 
 Book.id = 1;
 
+
 function addBookToList(book) {
   bookList.push(book);
 }
+
 
 function render(book) {
   const tableBody = document.querySelector('tbody');
@@ -56,24 +58,58 @@ function render(book) {
     }
   }
   
-  // create the button for the read toggle
-  const readButton = document.createElement("button"); 
-  // get the <td> element containing the read data, and remove
-  const readCell = document.querySelector(`.b${Book.id}.read`);
-  const textNode = readCell.textContent;
-  row.removeChild(readCell);
-  // set button classes
-  const btnColor = textNode == "true" ? "btn-success" : "btn-warning";
-  readButton.setAttribute("class", `btn btn-sm ${btnColor} read-btn b${Book.id}`);
-  // append the button as child of the <tr> node
-  readButton.textContent = textNode === "true" ? "Done" : "Still reading";
-  row.appendChild(readButton);
-
-  // if the button is clicked, toggle between true/false
-  readButton.addEventListener("click", readBtnClick);
+  createReadButton(Book.id, row);  
+  createDeleteButton(Book.id, row);
 
   Book.id++;
 }
+
+
+function createDeleteButton(id, rowNode) {
+  const tableCell = document.createElement("td");
+  const delBtn = document.createElement("button");
+  const trashIcon = document.createElement("i");
+
+  trashIcon.setAttribute("class", "fas fa-trash");
+  delBtn.appendChild(trashIcon);
+  delBtn.setAttribute("class", "btn btn-outline-danger del-btn");
+  delBtn.setAttribute("id", id);
+  tableCell.setAttribute("class", "delBtn-cell");
+
+  tableCell.appendChild(delBtn);
+  rowNode.appendChild(tableCell);
+  
+  delBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    // deletes the book from the array
+    bookList.splice(id - 1, 1);
+
+    // remove from the DOM
+    const tr = delBtn.parentNode.parentNode;
+    const tbody = document.querySelector("tbody");
+    tbody.removeChild(tr);
+  });
+}
+
+
+function createReadButton(id, rowNode) {
+  // create the button for the read toggle
+  const readButton = document.createElement("button");
+  // get the <td> element containing the read data, and remove
+  const readCell = document.querySelector(`.b${id}.read`);
+  const textNode = readCell.textContent;
+  rowNode.removeChild(readCell);
+  // set button classes
+  const btnColor = textNode == "true" ? "btn-success" : "btn-warning";
+  readButton.setAttribute("class", `btn btn-sm ${btnColor} read-btn b${id}`);
+  // append the button as child of the <tr> node
+  readButton.textContent = textNode === "true" ? "Done" : "Still reading";
+  rowNode.appendChild(readButton);
+
+  // if the button is clicked, toggle between true/false
+  readButton.addEventListener("click", readBtnClick);
+}
+
 
 function readBtnClick(e) {
   let newValue = !(e.target.textContent === 'Done');
@@ -84,7 +120,7 @@ function readBtnClick(e) {
   // change the button appearance
   e.target.classList.remove(`${!newValue ? "btn-success" : "btn-warning"}`);
   e.target.classList.add(`${newValue ? "btn-success" : "btn-warning"}`);
-  console.log('clicked');
+  console.log(bookList);
   
 }
 
@@ -96,12 +132,13 @@ form.addEventListener("submit", e => {
   const book = new Book(title.value, author.value, pages.value, read.checked);
   addBookToList(book);
   render(book);
-  resetFields();
+  this.resetFields();
 
   // hides the form
   formBackgroundDiv.classList.toggle("form-bg");
   formContainer.style.visibility = "hidden";
 });
+
 
 function resetFields() {
   title.value = "";
@@ -110,16 +147,8 @@ function resetFields() {
   read.checked = false;
 }
 
+
 addBookButton.addEventListener("click", () => {
   formBackgroundDiv.classList.toggle("form-bg");
   formContainer.style.visibility = "visible";
 });
-
-
-
-
-// render();
-
-
-
-
